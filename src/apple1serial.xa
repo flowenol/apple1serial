@@ -1,0 +1,204 @@
+#define hex1l $50            ;End address of dump block
+#define hex1h $51
+#define hex2l $52            ;Begin address of dump block
+#define hex2h $53
+
+#define input $0200          ;Input buffer
+#define kbd_data $D010       ;PIA.A keyboard input
+#define kbd_cr $D011         ;PIA.A keyboard control register
+#define monitor $FF1A        ;Escape back to monitor
+#define echo $FFEF           ;Echo character to terminal
+#define prbyte $FFDC
+
+#define serial_ready $C000   ;Serial status
+#define serial_read  $C080   ;Data read address
+#define serial_write $C081   ;Data write address
+
+;-------------------------------------------------------------------------
+;  Constants
+;-------------------------------------------------------------------------
+
+#define R_LETTER $D2
+#define W_LETTER $D7
+#define ZERO $B0
+#define SEP $AE
+#define CR $8D          ;Carriage Return
+#define ESC $9B         ;ASCII ESC
+#define SPACE $A0
+
+; pad first 256 bytes with zeroes
+.dsb 256, 0
+
+; this section is almost identical to original WOZ ACI
+; adapted from https://www.sbprojects.net/projects/apple1/aci.php
+* = $C100
+apple_serial
+    lda #CR             ;Drop the cursor one line
+    jsr echo
+    lda #"*"            ;Print prompt
+    jsr echo
+    lda #CR             ;And drop the cursor one line
+    jsr echo
+    ldy #$FF            ;Reset the input buffer index
+
+next_char
+    iny
+
+kbd_wait
+    lda kbd_cr           ;Wait for a key
+    bpl kbd_wait         ;Still no key!
+
+    lda kbd_data         ;Read key from keyboard
+    sta $0200,Y          ;Save it into buffer
+    jsr echo             ;And type it on the screen
+    cmp #ESC
+    beq apple_serial     ;Start from scratch if ESC!
+    cmp #CR
+    bne next_char        ;Read keys until CR
+
+    ldx #$FF             ;Initialize parse buffer pointer
+
+;-------------------------------------------------------------------------
+; Start parsing first or a new tape command
+;-------------------------------------------------------------------------
+
+next_cmd
+    lda #$00              ;Clear begin and end values
+    sta hex1l
+    sta hex1h
+    sta hex2l
+    sta hex2h
+
+next_chr
+    inx                 ;Increment input pointer
+    lda $0200,X         ;Get next char from input lin
+    cmp #R_LETTER       ;Read command?
+    beq read            ;Yes!
+    cmp #W_LETTER       ;Write command?
+    beq write           ;Yes! (note: CY=1)
+    cmp #SEP            ;Separator?
+    beq separator       ;Yes!
+    cmp #CR             ;End of line?
+    beq to_monitor      ;Escape to monitor! We're done
+    cmp #SPACE          ;Ignore spaces
+    beq next_chr
+    eor #ZERO           ;Map digits to 0-9
+    cmp #$0A            ;Is it a decimal digit?
+    bcc digit           ;Yes!
+    clc
+    adc #$89            ;Map letter "A"-"F" to $FA-$FF
+    cmp #$FA            ;Hex letter?
+    bcc apple_serial    ;No! Character not hex!
+
+digit
+    asl                 ;Hex digit to MSD of A
+    asl
+    asl
+    asl
+
+    ldy #4              ;Shift count
+
+hexshift
+    asl                 ;Hex digit left, MSB to carry
+    rol hex1l           ;Rotate into LSD
+    rol hex1h           ;Rotate into MSD
+    dey                 ;Done 4 shifts?
+    bne hexshift        ;No! Loop
+    beq next_chr        ;Handle next character
+
+;-------------------------------------------------------------------------
+; Return to monitor, prints \ first
+;-------------------------------------------------------------------------
+
+to_monitor
+    jmp monitor         ;Escape back to monitor
+
+;-------------------------------------------------------------------------
+; Separating . found. Copy HEX1 to Hex2. Doesn't clear HEX1!!!
+;-------------------------------------------------------------------------
+
+separator
+    lda hex1l           ;Copy hex value 1 to hex value 2
+    sta hex2l
+    lda hex1h
+    sta hex2h
+    lda #$00            ;Original ACI bug (not enough ROM space?) fix
+    sta hex1l
+    sta hex1h
+    jmp next_chr        ;Always taken!
+
+;-------------------------------------------------------------------------
+; Read procedure
+;-------------------------------------------------------------------------
+
+read
+    lda serial_read     ;Enable read mode
+    ldy #$00
+
+read_byte
+    lda serial_ready
+    beq read_byte       ;No data arrived
+    lda serial_read     ;Read byte
+    sta ($52),Y         ;Store byte under address
+
+    lda hex2l
+    cmp hex1l           ;Compare lower destination address half with lower end address half
+    bne read_next       ;If not equal then increment destination address
+
+    lda hex2h
+    cmp hex1h           ;Compare upper destination address half with upper end address half
+    bne read_next       ;If not equal then proceed to read next byte
+
+    jmp next_cmd        ;Read is completed, proceed to next command
+
+read_next
+    ldx #hex2l
+    jsr increment_16bit ;Increment destination address
+    jmp read_byte
+
+;-------------------------------------------------------------------------
+; Write procedure
+;-------------------------------------------------------------------------
+
+write
+    lda serial_read     ;Enable read mode to be sure that we are in "fresh" write mode
+    sta serial_write    ;Enable write mode
+    ldy #$00
+    
+write_byte
+    lda serial_ready
+    beq write_byte
+    lda ($52),Y
+    sta serial_write
+
+    lda hex2l
+    cmp hex1l           ;Compare lower destination address half with lower end address half
+    bne write_next      ;If not equal then increment destination address
+
+    lda hex2h
+    cmp hex1h           ;Compare upper destination address half with upper end address half
+    bne write_next      ;If not equal then proceed to write next byte
+
+    jmp next_cmd        ;Read is completed, proceed to next command
+
+write_next
+    ldx #hex2l
+    jsr increment_16bit ;Increment destination address
+    jmp write_byte
+
+;-------------------------------------------------------------------------
+; tool routines
+;-------------------------------------------------------------------------
+
+increment_16bit
+    inc $00,X
+    bne increment_16bit_done
+    inx
+    inc $00,X
+increment_16bit_done
+    rts
+
+;-------------------------------------------------------------------------
+
+end_of_apple1serial
+;#include "src/tests.xa"

@@ -1,0 +1,20 @@
+chip  GAL20V8
+
+NC3=1 RW=2 A0=3 A1=4 A2=5 A3=6 A4=7 A5=8 A6=9 A7=10 A8=11 GND=12
+A9=14 A10=15 A11=16 SR=17 RD=18 WD=19 ROM=20
+R=23 VCC=24
+
+NC1=21 NC2=22
+
+equations
+
+NC1=gnd
+NC2=gnd
+
+SR = /A0 * /A1 * /A2 * /A3 * /A4 * /A5 * /A6 * /A7 * /A8 * /A9 * /A10 * /A11 * /R * RW
+RD = /A0 * /A1 * /A2 * /A3 * /A4 * /A5 * /A6 * A7 * /A8 * /A9 * /A10 * /A11 * /R * RW
+WD = A0 * /A1 * /A2 * /A3 * /A4 * /A5 * /A6 * A7 * /A8 * /A9 * /A10 * /A11 * /R * /RW
+/ROM = A8 * /R * RW
+    + A9 * /R * RW
+    + A10 * /R * RW
+    + A11 * /R * RW

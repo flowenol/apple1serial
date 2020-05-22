@@ -1,0 +1,67 @@
+#define echo    $FFEF
+#define kbd_data $D010
+#define kbd_cr $D011
+#define serial_ready $C000
+#define serial_read  $C080
+#define serial_write $C081
+
+* = $C200
+.dsb (*-end_of_apple1serial), 0
+
+; teletype on apple-1
+* = $C200
+teletype_apple1 = $C200
+  lda serial_read
+wait
+  lda serial_ready
+  beq wait
+  lda serial_read
+  jsr echo
+  jmp wait
+end_of_teletype_apple1
+
+; AD 80 C0 AD 00 C0 F0 FB
+; AD 80 C0 20 EF FF 4C 03
+; 00
+
+; teletype on remote
+* = $C300
+.dsb (*-end_of_teletype_apple1), 0
+
+* = $C300
+teletype_remote = $C300
+  lda #$FF
+  sta serial_write
+get_key
+  lda kbd_cr
+  bpl get_key
+  lda kbd_data
+  sec
+  sbc #$A0
+  sta serial_write
+  jmp get_key
+end_of_teletype_remote
+
+; A9 FF 8D 81 C0 AD 11 D0
+; 10 FB AD 10 D0 38 E9 A0
+; 8D 81 C0 4C 85 02
+
+; 0-255 repeating counter over TXD
+* = $C400
+.dsb (*-end_of_teletype_remote), 0
+
+* = $C400
+counter_remote = $C400
+  ldy #$00
+  sta serial_write
+check_ready
+  lda serial_ready
+  beq check_ready
+  tya
+  sta serial_write
+  iny
+  jmp check_ready
+
+; A0 00 8D 81 C0 AD 00 C0
+; F0 FB 98 8D 81 C0 C8 4C
+; 85 02

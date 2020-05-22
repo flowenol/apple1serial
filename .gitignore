@@ -1,0 +1,6 @@
+*.xcodeproj
+*.hex
+*.elf
+*.o
+*.bin
+*.label
