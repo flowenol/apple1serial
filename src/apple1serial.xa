@@ -1,18 +1,23 @@
-#define hex1l $50            ;End address of dump block
-#define hex1h $51
-#define hex2l $52            ;Begin address of dump block
-#define hex2h $53
+ ;End address of dump block
+#define hex1_l $50
+#define hex1_h $51
 
-#define input $0200          ;Input buffer
+;Begin address of dump block
+#define hex2_l $52
+#define hex2_h $53
+
+;Input buffer
+#define input $0200
 #define kbd_data $D010       ;PIA.A keyboard input
 #define kbd_cr $D011         ;PIA.A keyboard control register
 #define monitor $FF1A        ;Escape back to monitor
 #define echo $FFEF           ;Echo character to terminal
 #define prbyte $FFDC
 
-#define serial_ready $C000   ;Serial status
-#define serial_read  $C080   ;Data read address
-#define serial_write $C081   ;Data write address
+#define serial_ready $C000
+#define serial_reset $C001
+#define serial_read  $C080
+#define serial_write $C081
 
 ;-------------------------------------------------------------------------
 ;  Constants
@@ -49,7 +54,7 @@ kbd_wait
     bpl kbd_wait         ;Still no key!
 
     lda kbd_data         ;Read key from keyboard
-    sta $0200,Y          ;Save it into buffer
+    sta input,Y          ;Save it into buffer
     jsr echo             ;And type it on the screen
     cmp #ESC
     beq apple_serial     ;Start from scratch if ESC!
@@ -64,10 +69,10 @@ kbd_wait
 
 next_cmd
     lda #$00              ;Clear begin and end values
-    sta hex1l
-    sta hex1h
-    sta hex2l
-    sta hex2h
+    sta hex1_l
+    sta hex1_h
+    sta hex2_l
+    sta hex2_h
 
 next_chr
     inx                 ;Increment input pointer
@@ -100,8 +105,8 @@ digit
 
 hexshift
     asl                 ;Hex digit left, MSB to carry
-    rol hex1l           ;Rotate into LSD
-    rol hex1h           ;Rotate into MSD
+    rol hex1_l          ;Rotate into LSD
+    rol hex1_h          ;Rotate into MSD
     dey                 ;Done 4 shifts?
     bne hexshift        ;No! Loop
     beq next_chr        ;Handle next character
@@ -111,49 +116,70 @@ hexshift
 ;-------------------------------------------------------------------------
 
 to_monitor
-    jmp monitor         ;Escape back to monitor
+    ;jmp monitor         ;Escape back to monitor
+    jmp apple_serial
 
 ;-------------------------------------------------------------------------
 ; Separating . found. Copy HEX1 to Hex2. Doesn't clear HEX1!!!
 ;-------------------------------------------------------------------------
 
 separator
-    lda hex1l           ;Copy hex value 1 to hex value 2
-    sta hex2l
-    lda hex1h
-    sta hex2h
+    lda hex1_l          ;Copy hex value 1 to hex value 2
+    sta hex2_l
+    lda hex1_h
+    sta hex2_h
     lda #$00            ;Original ACI bug (not enough ROM space?) fix
-    sta hex1l
-    sta hex1h
-    jmp next_chr        ;Always taken!
+    sta hex1_l
+    sta hex1_h
+    jmp next_chr
+
+reset
+    txa
+    pha
+    lda serial_reset
+    ldx #$00
+    ldy #$00
+reset_loop              ; ((2 + 2 + 3) * 255 + 2 + 3) * 255 =
+    nop                 ; 2 cycles
+    iny                 ; 2 cycles
+    bne reset_loop      ; 3 cycles
+    inx                 ; 2 cycles
+    bne reset_loop      ; 3 cycles
+    pla
+    tax
+    rts
 
 ;-------------------------------------------------------------------------
 ; Read procedure
 ;-------------------------------------------------------------------------
 
 read
-    lda serial_read     ;Enable read mode
+    lda serial_read     ;Enable read mode, this can be done quick, without reset
     ldy #$00
 
 read_byte
     lda serial_ready
     beq read_byte       ;No data arrived
     lda serial_read     ;Read byte
-    sta ($52),Y         ;Store byte under address
+    sta (hex2_l),Y      ;Store byte under address, this should be hex2_l but macro substitution doesn't work
 
-    lda hex2l
-    cmp hex1l           ;Compare lower destination address half with lower end address half
+    lda hex2_l
+    cmp hex1_l          ;Compare lower destination address half with lower end address half
     bne read_next       ;If not equal then increment destination address
 
-    lda hex2h
-    cmp hex1h           ;Compare upper destination address half with upper end address half
+    lda hex2_h
+    cmp hex1_h          ;Compare upper destination address half with upper end address half
     bne read_next       ;If not equal then proceed to read next byte
 
     jmp next_cmd        ;Read is completed, proceed to next command
 
 read_next
-    ldx #hex2l
+    txa                 ;Preserve X on stack
+    pha
+    ldx #hex2_l
     jsr increment_16bit ;Increment destination address
+    pla                 ;Restore X from stack
+    tax
     jmp read_byte
 
 ;-------------------------------------------------------------------------
@@ -161,29 +187,35 @@ read_next
 ;-------------------------------------------------------------------------
 
 write
-    lda serial_read     ;Enable read mode to be sure that we are in "fresh" write mode
+    jsr reset           ;Reset serial and give some time to stabilize
+                        ;This is required due to inability to guess what is the current device mode
+                        ;and prevents from polluting the output while setting the write mode
     sta serial_write    ;Enable write mode
     ldy #$00
-    
+
 write_byte
     lda serial_ready
-    beq write_byte
-    lda ($52),Y
-    sta serial_write
+    beq write_byte      ;Not yet ready to write data
+    lda (hex2_l),Y      ;Read byte from source address, this should be hex2_l but macro substitution doesn't work
+    sta serial_write    ;Write byte
 
-    lda hex2l
-    cmp hex1l           ;Compare lower destination address half with lower end address half
-    bne write_next      ;If not equal then increment destination address
+    lda hex2_l
+    cmp hex1_l          ;Compare lower source address half with lower end address half
+    bne write_next      ;If not equal then increment source address
 
-    lda hex2h
-    cmp hex1h           ;Compare upper destination address half with upper end address half
+    lda hex2_h
+    cmp hex1_h          ;Compare upper source address half with upper end address half
     bne write_next      ;If not equal then proceed to write next byte
 
-    jmp next_cmd        ;Read is completed, proceed to next command
+    jmp next_cmd        ;Write is completed, proceed to next command
 
 write_next
-    ldx #hex2l
+    txa                 ;Preserve X on stack
+    pha
+    ldx #hex2_l
     jsr increment_16bit ;Increment destination address
+    pla                 ;Restore X from stack
+    tax
     jmp write_byte
 
 ;-------------------------------------------------------------------------
@@ -201,4 +233,4 @@ increment_16bit_done
 ;-------------------------------------------------------------------------
 
 end_of_apple1serial
-;#include "src/tests.xa"
+#include "src/tests.xa"
