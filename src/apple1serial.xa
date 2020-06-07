@@ -1,10 +1,15 @@
  ;End address of dump block
-#define hex1_l $50
-#define hex1_h $51
+#define hex1_l $24
+#define hex1_h $25
 
 ;Begin address of dump block
-#define hex2_l $52
-#define hex2_h $53
+#define hex2_l $26
+#define hex2_h $27
+
+#define last_command $28
+#define last_command_none $00
+#define last_command_read $01
+#define last_command_write $02
 
 ;Input buffer
 #define input $0200
@@ -44,6 +49,8 @@ apple_serial
     jsr echo
     lda #CR             ;And drop the cursor one line
     jsr echo
+    lda #$00            ;Set last command type to NONE
+    sta last_command
     ldy #$FF            ;Reset the input buffer index
 
 next_char
@@ -133,28 +140,16 @@ separator
     sta hex1_h
     jmp next_chr
 
-reset
-    txa
-    pha
-    lda serial_reset
-    ldx #$00
-    ldy #$00
-reset_loop              ; ((2 + 2 + 3) * 255 + 2 + 3) * 255 =
-    nop                 ; 2 cycles
-    iny                 ; 2 cycles
-    bne reset_loop      ; 3 cycles
-    inx                 ; 2 cycles
-    bne reset_loop      ; 3 cycles
-    pla
-    tax
-    rts
-
 ;-------------------------------------------------------------------------
 ; Read procedure
 ;-------------------------------------------------------------------------
 
 read
+    lda last_command
+    cmp #last_command_read
+    beq read_ready
     lda serial_read     ;Enable read mode, this can be done quick, without reset
+read_ready
     ldy #$00
 
 read_byte
@@ -171,6 +166,8 @@ read_byte
     cmp hex1_h          ;Compare upper destination address half with upper end address half
     bne read_next       ;If not equal then proceed to read next byte
 
+    lda last_command_read ;Set last command to READ
+    sta last_command
     jmp next_cmd        ;Read is completed, proceed to next command
 
 read_next
@@ -187,10 +184,14 @@ read_next
 ;-------------------------------------------------------------------------
 
 write
+    lda last_command
+    cmp #last_command_write
+    beq write_ready
     jsr reset           ;Reset serial and give some time to stabilize
                         ;This is required due to inability to guess what is the current device mode
                         ;and prevents from polluting the output while setting the write mode
     sta serial_write    ;Enable write mode
+write_ready
     ldy #$00
 
 write_byte
@@ -207,6 +208,8 @@ write_byte
     cmp hex1_h          ;Compare upper source address half with upper end address half
     bne write_next      ;If not equal then proceed to write next byte
 
+    lda last_command_write ;Set last command to WRITE
+    sta last_command
     jmp next_cmd        ;Write is completed, proceed to next command
 
 write_next
@@ -221,6 +224,30 @@ write_next
 ;-------------------------------------------------------------------------
 ; tool routines
 ;-------------------------------------------------------------------------
+
+reset
+    txa                 ;Preserve X on stack
+    pha
+
+    tya                 ;Preserve Y on stack
+    pha
+
+    lda serial_reset    ;Reset
+    ldx #$00
+    ldy #$00
+reset_loop              ; ~((2 + 2 + 3) * 255 + 2 + 3) * 255 =
+    nop                 ; 2 cycles
+    iny                 ; 2 cycles
+    bne reset_loop      ; 3 cycles
+    inx                 ; 2 cycles
+    bne reset_loop      ; 3 cycles
+
+    pla                 ;Restore Y from stack
+    tay
+
+    pla                 ;Restore X from stack
+    tax
+    rts
 
 increment_16bit
     inc $00,X

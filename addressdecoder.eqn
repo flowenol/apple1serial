@@ -7,7 +7,7 @@ R=23 VCC=24
 equations
 
 SR = /A0 * /A1 * /A2 * /A3 * /A4 * /A5 * /A6 * /A7 * /A8 * /A9 * /A10 * /A11 * /R * RW
-RD = /A0 * /A1 * /A2 * /A3 * /A4 * /A5 * /A6 * A7 * /A8 * /A9 * /A10 * /A11 * /R * RW * PHI
+RD = /A0 * /A1 * /A2 * /A3 * /A4 * /A5 * /A6 * A7 * /A8 * /A9 * /A10 * /A11 * /R * RW
 WD = A0 * /A1 * /A2 * /A3 * /A4 * /A5 * /A6 * A7 * /A8 * /A9 * /A10 * /A11 * /R * /RW * PHI
 /ROM = A8 * /R * RW
     + A9 * /R * RW
