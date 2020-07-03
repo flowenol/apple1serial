@@ -24,9 +24,6 @@
 #define serial_read  $C080
 #define serial_write $C081
 
-;-------------------------------------------------------------------------
-;  Constants
-;-------------------------------------------------------------------------
 
 #define R_LETTER $D2
 #define W_LETTER $D7
@@ -71,7 +68,7 @@ kbd_wait
     ldx #$FF             ;Initialize parse buffer pointer
 
 ;-------------------------------------------------------------------------
-; Start parsing first or a new tape command
+; Start parsing command
 ;-------------------------------------------------------------------------
 
 next_cmd
@@ -166,7 +163,7 @@ read_byte
     cmp hex1_h          ;Compare upper destination address half with upper end address half
     bne read_next       ;If not equal then proceed to read next byte
 
-    lda last_command_read ;Set last command to READ
+    lda #last_command_read ;Set last command to READ
     sta last_command
     jmp next_cmd        ;Read is completed, proceed to next command
 
@@ -208,7 +205,7 @@ write_byte
     cmp hex1_h          ;Compare upper source address half with upper end address half
     bne write_next      ;If not equal then proceed to write next byte
 
-    lda last_command_write ;Set last command to WRITE
+    lda #last_command_write ;Set last command to WRITE
     sta last_command
     jmp next_cmd        ;Write is completed, proceed to next command
 

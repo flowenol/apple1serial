@@ -55,7 +55,7 @@ inline void not_ready() {
 inline void put_data() {
     upper_part = (PORTD & 0xe3) | ((0xe0 & receive_buffer[0])>>3);
     lower_part = (PORTB & 0xc1) | ((0x1f & receive_buffer[0])<<1);
-    
+
     PORTD = upper_part;
     PORTB = lower_part;
 }
@@ -108,20 +108,20 @@ ISR(PCINT0_vect) {
             // set output on data pins
             DDRD |= _BV(DATA5) | _BV(DATA6) | _BV(DATA7);
             DDRB |= _BV(DATA0) | _BV(DATA1) | _BV(DATA2) | _BV(DATA3) | _BV(DATA4);
-            
+
             receive_index = -1;
             not_ready();
             data_read_interrupt_count = 1;
             return;
         }
-        
+
         if (receive_index > -1) {
             uint8_t i;
             for (i = 1; i <= receive_index; i++) {
                 receive_buffer[i - 1] = receive_buffer[i];
             }
             receive_index--;
-            
+
             if (receive_index == -1) {
                 not_ready();
             } else {
@@ -181,16 +181,16 @@ ISR(USART_RX_vect)
 {
     if (mode == READ) {
         data = UDR0;
-        
+
         if (receive_index >= BUFFER_SIZE - 1) {
             receive_index = -1;
         }
-        
+
         receive_buffer[++receive_index] = data;
-        
+
         // always put first byte from receive buffer
         put_data();
-        
+
         ready();
     }
 }
