@@ -12,7 +12,7 @@
 ; the data from remote appears on apple-1 screen
 * = $C300
 teletype_apple1 = $C300
-  jsr reset
+  jsr reset_serial
   lda serial_read
 wait
   lda serial_ready
@@ -29,7 +29,7 @@ end_of_teletype_apple1
 
 * = $C400
 teletype_remote = $C400
-  jsr reset
+  jsr reset_serial
   lda #$FF
   sta serial_write
 get_key
@@ -48,7 +48,7 @@ end_of_teletype_remote
 
 * = $C500
 counter_remote = $C500
-  jsr reset
+  jsr reset_serial
   ldy #$00
   sta serial_write
 check_ready
@@ -58,7 +58,7 @@ check_ready
   sta serial_write
   iny
   jmp check_ready
-
+end_of_counter_remote
 ; How to store INTEGER BASIC progams?
 ; C100R
 ; 004A.00FFW 0800.0FFFW

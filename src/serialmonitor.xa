@@ -1,0 +1,336 @@
+;-------------------------------------------------------------------------
+;  This is an serial interface version of the well known Woz monitor.
+;  Much of the original code has been preserved with slight additions
+;  regarding the IO of the serial interface.
+;-------------------------------------------------------------------------
+
+#define serial_ready $C000
+#define serial_read  $C080
+#define serial_write $C081
+
+;-------------------------------------------------------------------------
+;  Memory declaration
+;-------------------------------------------------------------------------
+
+; Last "opened" location Low
+#define XAML $24
+; Last "opened" location High
+#define XAMH $25
+; Store address Low
+#define STL $26
+; Store address High
+#define STH $27
+; Hex value parsing Low
+#define L $28
+; Hex value parsing High
+#define H $29
+; Used to see if hex value is given
+#define YSAV $2A
+; $00=XAM, $7F=STOR, $AE=BLOCK XAM
+#define MODE $2B
+; current serial mode
+#define SERIAL_MODE $2C
+
+#define SERIAL_MODE_WRITE $01
+#define SERIAL_MODE_READ $FF
+
+; Input buffer
+#define IN $0200
+
+;-------------------------------------------------------------------------
+;  Constants
+;-------------------------------------------------------------------------
+
+; Backspace key, arrow left key
+#define BS $08
+
+; Carriage Return
+#define CR $0D
+
+; Dot character
+#define DOT "."
+
+; Colon character
+#define COLON ":"
+
+; ESC key
+#define ESC $1B
+; Prompt character
+#define PROMPT  "\"
+
+#define SPACE $20
+
+;-------------------------------------------------------------------------
+;  Let's get started
+;-------------------------------------------------------------------------
+
+* = $C600
+.dsb (*-end_of_counter_remote), 0
+* = $C600
+
+reset
+    jsr reset_serial
+    jsr prep_serial_write;Enable serial write mode
+    cld                 ;Clear decimal arithmetic mode
+    cli                 ;Enable interrupts
+    ldy #$7F
+
+; Program falls through to the getline routine to save some program bytes
+; Please note that Y holds $7F, which will cause an automatic Escape
+
+;-------------------------------------------------------------------------
+; The getline process
+;-------------------------------------------------------------------------
+
+notcr
+    cmp #BS             ;Backspace key?
+    beq backspace       ;Yes
+    cmp #ESC            ;ESC?
+    beq escape          ;Yes
+    iny                 ;Advance text index
+    bpl nextchar        ;Auto ESC if line longer than 127
+
+escape
+    lda #PROMPT         ;Print prompt character
+    jsr serial_echo     ;Output it.
+
+getline
+    lda #CR             ;Send CR
+    jsr serial_echo
+
+    ldy #0+1            ;Start a new input line
+
+backspace
+    dey                 ;Backup text index
+    bmi getline         ;Oops, line's empty, reinitialize
+
+nextchar
+    jsr prep_serial_read;Prepare for read
+    lda serial_ready    ;Character received?
+    beq nextchar        ;Loop if not
+    lda serial_read     ;Read character
+    sta IN,Y            ;Add to text buffer
+    jsr prep_serial_write;Prepare for write
+    cmp #BS            ;Do not print control characters
+    beq afterecho
+    cmp #ESC
+    beq afterecho
+    jsr serial_echo     ;Display character
+afterecho
+    cmp #CR
+    bne notcr           ;It's not CR!
+
+; Line received, now let's parse it
+
+    ldy #$FF            ;Reset text index (orig -1)
+    lda #0              ;Default mode is XAM
+    tax                 ;X=0
+
+setstor
+    asl                 ;Leaves $7B if setting STOR mode
+
+setmode
+    sta MODE            ;Set mode flags
+
+blskip
+    iny                 ;Advance text index
+
+nextitem
+    lda IN,Y            ;Get character
+    cmp #CR
+    beq getline         ;We're done if it's CR!
+    cmp #DOT
+    bcc blskip          ;Ignore everything below "."!
+    beq setxam          ;Set BLOCK XAM mode
+    cmp #COLON
+    beq setstormode     ;Set STOR mode! $BA will become $7B
+    cmp #"R"
+    beq run             ;Run the program! Forget the rest
+    cmp #"r"
+    beq run             ;Run the program on lowercase r
+    stx L               ;Clear input value (X=0)
+    stx H
+    sty YSAV            ;Save Y for comparison
+
+; Here we're trying to parse a new hex value
+
+nexthex
+    lda IN,Y            ;Get character for hex test
+    eor #$30            ;Map digits to 0-9
+    cmp #9+1            ;Is it a decimal digit?
+    bcc dig             ;Yes!
+
+    adc #$A8            ;Map letter "a"-"f" to $FA-FF
+    cmp #$FA            ;Hex letter?
+    bcs dig             ;Yes!
+
+    adc #$E0            ;Map letter "A"-"F" to $FA-FF
+    cmp #$FA            ;Hex letter?
+    bcc nothex          ;No! Character not hex
+
+dig
+    asl
+    asl                 ;Hex digit to MSD of A
+    asl
+    asl
+
+    ldx #4              ;Shift count
+
+hexshft
+    asl                 ;Hex digit left, MSB to carry
+    rol L               ;Rotate into LSD
+    rol H               ;Rotate into MSD's
+    dex                 ;Done 4 shifts?
+    bne hexshft         ;No, loop
+    iny                 ;Advance text index
+    bne nexthex         ;Always taken
+
+nothex
+    cpy YSAV            ;Was at least 1 hex digit given?
+    beq toescape        ;No! Ignore all, start from scratch
+
+    bit MODE            ;Test MODE byte
+    bvc notstor         ;B6=0 is STOR, 1 is XAM or BLOCK XAM
+
+; STOR mode, save LSD of new hex byte
+
+    lda L               ;LSD's of hex data
+    sta (STL,X)         ;Store current 'store index'(X=0)
+    inc STL             ;Increment store index.
+    bne nextitem        ;No carry!
+    inc STH             ;Add carry to 'store index' high
+
+tonextitem
+    jmp nextitem        ;Get next command item.
+
+toescape
+    jmp escape
+
+setxam
+    ora #$80
+    jmp setmode
+
+setstormode
+    ora #$80
+    jmp setstor
+
+;-------------------------------------------------------------------------
+;  run user's program from last opened location
+;-------------------------------------------------------------------------
+
+run
+    jmp (XAML)          ;Run user's program
+
+;-------------------------------------------------------------------------
+;  We're not in Store mode
+;-------------------------------------------------------------------------
+
+notstor
+    bmi xamnext         ;B7 = 0 for XAM, 1 for BLOCK XAM
+
+; We're in XAM mode now
+
+    ldx #2              ;Copy 2 bytes
+setadr
+    lda L-1,X           ;Copy hex data to
+    sta STL-1,X         ; 'store index'
+    sta XAML-1,X        ; and to 'XAM index'
+    dex                 ;Next of 2 bytes
+    bne setadr          ;Loop unless X = 0
+
+; Print address and data from this address, fall through next bne.
+
+nxtprnt
+    bne pr_data         ;NE means no address to print
+    lda #CR             ;Print CR first
+    jsr serial_echo
+    lda XAMH            ;Output high-order byte of address
+    jsr pr_byte
+    lda XAML            ;Output low-order byte of address
+    jsr pr_byte
+    lda #COLON          ;Print colon
+    jsr serial_echo
+
+pr_data
+    lda #SPACE          ;Print space
+    jsr serial_echo
+    lda (XAML,X)        ;Get data from address (X=0)
+    jsr pr_byte         ;Output it in hex format
+
+xamnext
+    stx MODE            ;0 -> MODE (XAM mode).
+    lda XAML            ;See if there's more to print
+    cmp L
+    lda XAMH
+    sbc H
+    bcs tonextitem      ;Not less! No more data to output
+
+    inc XAML            ;Increment 'examine index'
+    bne mod8chk         ;No carry!
+    inc XAMH
+
+mod8chk
+    lda XAML            ;If address MOD 8 = 0 start new line
+    and #%00000111
+    bpl nxtprnt         ;Always taken.
+
+;-------------------------------------------------------------------------
+;  Subroutine to print a byte in A in hex form (destructive)
+;-------------------------------------------------------------------------
+
+pr_byte
+    pha                 ;Save A for LSD
+    lsr
+    lsr
+    lsr                 ;MSD to LSD position
+    lsr
+    jsr pr_hex           ;Output hex digit
+    pla                 ;Restore A
+
+; Fall through to print hex routine
+
+;-------------------------------------------------------------------------
+;  Subroutine to print a hexadecimal digit
+;-------------------------------------------------------------------------
+
+pr_hex
+    and #%00001111      ;Mask LSD for hex print
+    ora #"0"            ;Add "0"
+    cmp #"9"+1          ;Is it a decimal digit?
+    bcc serial_echo     ;Yes! output it
+    adc #6              ;Add offset for letter A-F; skip ASCII signs
+
+; Fall through to print routine
+
+;-------------------------------------------------------------------------
+;  Subroutine to print a character to the terminal
+;-------------------------------------------------------------------------
+
+serial_echo
+    pha
+serial_echo_wait
+    lda serial_ready
+    beq serial_echo_wait ;Not yet ready to write data
+    pla
+    sta serial_write     ;Write byte
+    rts
+
+prep_serial_write
+    pha
+    lda #SERIAL_MODE_WRITE
+    sta SERIAL_MODE
+    sta serial_write
+    pla
+    rts
+
+prep_serial_read
+    pha
+    lda SERIAL_MODE
+    cmp #SERIAL_MODE_WRITE
+    bne prep_serial_read_end
+    lda #SERIAL_MODE_READ
+    sta SERIAL_MODE
+    lda serial_read
+prep_serial_read_end
+    pla
+    rts

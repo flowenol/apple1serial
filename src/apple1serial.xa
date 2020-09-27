@@ -184,7 +184,7 @@ write
     lda last_command
     cmp #last_command_write
     beq write_ready
-    jsr reset           ;Reset serial and give some time to stabilize
+    jsr reset_serial    ;Reset serial and give some time to stabilize
                         ;This is required due to inability to guess what is the current device mode
                         ;and prevents from polluting the output while setting the write mode
     sta serial_write    ;Enable write mode
@@ -222,7 +222,7 @@ write_next
 ; tool routines
 ;-------------------------------------------------------------------------
 
-reset
+reset_serial
     txa                 ;Preserve X on stack
     pha
 
@@ -258,3 +258,4 @@ increment_16bit_done
 
 end_of_apple1serial
 #include "src/tests.xa"
+#include "src/serialmonitor.xa"
