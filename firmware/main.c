@@ -21,21 +21,21 @@
 #define DATA6 PD3
 #define DATA7 PD4
 
-#define BUFFER_SIZE 8
+#define BUFFER_SIZE 100
 
 typedef enum {NONE, READ, WRITE} mode_t;
-mode_t mode = NONE;
+volatile mode_t mode = NONE;
 
-uint8_t data = 0x00;
-uint8_t upper_part = 0x00;
-uint8_t lower_part = 0x00;
+volatile uint8_t data = 0x00;
+volatile uint8_t upper_part = 0x00;
+volatile uint8_t lower_part = 0x00;
 
-uint8_t data_write_interrupt_count = 0;
-uint8_t data_read_interrupt_count = 0;
+volatile uint8_t data_write_interrupt_count = 0;
+volatile uint8_t data_read_interrupt_count = 0;
 
 // receive buffer
-uint8_t receive_buffer[BUFFER_SIZE];
-int8_t receive_index = -1;
+volatile uint8_t receive_buffer[BUFFER_SIZE];
+volatile int8_t receive_index = -1;
 
 // Registers: PCMSK0, PCMSK1, PCMSK2 :registers that enable or disable pin-change interrupts
 // on individual pins

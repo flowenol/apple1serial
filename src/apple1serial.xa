@@ -1,4 +1,4 @@
- ;End address of dump block
+;End address of dump block
 #define hex1_l $24
 #define hex1_h $25
 
@@ -147,7 +147,10 @@ read
     beq read_ready
     lda serial_read     ;Enable read mode, this can be done quick, without reset
 read_ready
+    txa                 ;Preserve X on stack
+    pha
     ldy #$00
+    ldx #hex2_l
 
 read_byte
     lda serial_ready
@@ -165,15 +168,14 @@ read_byte
 
     lda #last_command_read ;Set last command to READ
     sta last_command
+
+    pla                 ;Restore X from stack
+    tax
+
     jmp next_cmd        ;Read is completed, proceed to next command
 
 read_next
-    txa                 ;Preserve X on stack
-    pha
-    ldx #hex2_l
     jsr increment_16bit ;Increment destination address
-    pla                 ;Restore X from stack
-    tax
     jmp read_byte
 
 ;-------------------------------------------------------------------------
@@ -189,6 +191,9 @@ write
                         ;and prevents from polluting the output while setting the write mode
     sta serial_write    ;Enable write mode
 write_ready
+    txa                 ;Preserve X on stack
+    pha
+    ldx #hex2_l
     ldy #$00
 
 write_byte
@@ -207,15 +212,14 @@ write_byte
 
     lda #last_command_write ;Set last command to WRITE
     sta last_command
+
+    pla                 ;Restore X from stack
+    tax
+
     jmp next_cmd        ;Write is completed, proceed to next command
 
 write_next
-    txa                 ;Preserve X on stack
-    pha
-    ldx #hex2_l
     jsr increment_16bit ;Increment destination address
-    pla                 ;Restore X from stack
-    tax
     jmp write_byte
 
 ;-------------------------------------------------------------------------
@@ -247,11 +251,13 @@ reset_loop              ; ~((2 + 2 + 3) * 255 + 2 + 3) * 255 =
     rts
 
 increment_16bit
+    txa
     inc $00,X
     bne increment_16bit_done
     inx
     inc $00,X
 increment_16bit_done
+    tax
     rts
 
 ;-------------------------------------------------------------------------
