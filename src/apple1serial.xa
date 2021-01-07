@@ -33,8 +33,11 @@
 #define ESC $9B         ;ASCII ESC
 #define SPACE $A0
 
-; pad first 256 bytes with zeroes
-.dsb 256, 0
+; pad first 252 bytes with zeroes
+.dsb 252, 0
+
+; include identification bytes
+.byt "A1SI"
 
 ; this section is almost identical to original WOZ ACI
 ; adapted from https://www.sbprojects.net/projects/apple1/aci.php

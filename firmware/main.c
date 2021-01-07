@@ -2,6 +2,7 @@
 #define F_CPU 16000000UL
 #endif
 
+// this seems to be the upper limit, above that some data is not received
 #define BAUD 9600
 
 #include <avr/io.h>

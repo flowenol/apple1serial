@@ -1,7 +1,7 @@
 EQN2JED - Boolean Equations to JEDEC file assembler (Version V101)
 Copyright (c) National Semiconductor Corporation 1990-1993
 
-Log file for d:/APPLE1~1/ADDRES~1.EQN
+Log file for d:/APPLE1~2/ADDRES~1.EQN
 Device: 20V8
 
 Pin   Label               Type
@@ -43,12 +43,12 @@ No of feedbacks used as dedicated outputs :  3/6  (50.0%)
 		Pin   Label                 Terms Usage
 		------------------------------------------
 		21    RES                   1/8   (12.5%)
-		20    ROM                   4/8   (50.0%)
+		20    ROM                   5/8   (62.5%)
 		19    WD                    1/8   (12.5%)
 		18    RD                    1/8   (12.5%)
 		17    SR                    1/8   (12.5%)
 		------------------------------------------
-		Total Terms                 8/64  (12.5%)
+		Total Terms                 9/64  (14.1%)
 		------------------------------------------
 
 EQN2JED - Boolean Equations to JEDEC file assembler (Version V101)
@@ -69,5 +69,5 @@ Copyright (c) National Semiconductor Corporation 1990-1993
                           A2 |  9        16 | A11
                           A1 | 10        15 | A10
                           A0 | 11        14 | A9
-                         GND | 12        13 |
+                         GND | 12        13 | 
                              |______________|

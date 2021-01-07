@@ -5,6 +5,11 @@
 #define serial_read  $C080
 #define serial_write $C081
 
+; How to store INTEGER BASIC progams?
+; C100R - run serial monitor
+; 004A.00FFW 0800.0FFFW - write data for default LOMEM & HIMEM
+; E2B3R - warm entry point
+
 * = $C300
 .dsb (*-end_of_apple1serial), 0
 
@@ -14,12 +19,12 @@
 teletype_apple1 = $C300
   jsr reset_serial
   lda serial_read
-wait
+teletype_apple1_wait
   lda serial_ready
-  beq wait
+  beq teletype_apple1_wait
   lda serial_read
   jsr echo
-  jmp wait
+  jmp teletype_apple1_wait
 end_of_teletype_apple1
 
 ; teletype on remote
@@ -36,8 +41,12 @@ get_key
   lda kbd_cr
   bpl get_key
   lda kbd_data
-  sec
-  sbc #$A0
+  and #$7F
+  tay
+teletype_remote_wait
+  lda serial_ready
+  beq teletype_remote_wait
+  tya
   sta serial_write
   jmp get_key
 end_of_teletype_remote
@@ -51,15 +60,11 @@ counter_remote = $C500
   jsr reset_serial
   ldy #$00
   sta serial_write
-check_ready
+counter_wait
   lda serial_ready
-  beq check_ready
+  beq counter_wait
   tya
   sta serial_write
   iny
-  jmp check_ready
+  jmp counter_wait
 end_of_counter_remote
-; How to store INTEGER BASIC progams?
-; C100R
-; 004A.00FFW 0800.0FFFW
-; E2B3R - warm entry point
