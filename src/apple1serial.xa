@@ -1,10 +1,10 @@
 ;End address of dump block
-#define hex1_l $24
-#define hex1_h $25
+#define hex1_l $34
+#define hex1_h $35
 
 ;Begin address of dump block
-#define hex2_l $26
-#define hex2_h $27
+#define hex2_l $36
+#define hex2_h $37
 
 #define last_command $28
 #define last_command_none $00
@@ -141,7 +141,7 @@ separator
     jmp next_chr
 
 ;-------------------------------------------------------------------------
-; Read procedure
+; In-monitor read procedure
 ;-------------------------------------------------------------------------
 
 read
@@ -182,7 +182,7 @@ read_next
     jmp read_byte
 
 ;-------------------------------------------------------------------------
-; Write procedure
+; In-monitor Write procedure
 ;-------------------------------------------------------------------------
 
 write
@@ -224,6 +224,71 @@ write_byte
 write_next
     jsr increment_16bit ;Increment destination address
     jmp write_byte
+
+
+;-------------------------------------------------------------------------
+; API read procedure
+;-------------------------------------------------------------------------
+
+api_read
+    jsr reset_serial
+    lda serial_read     ;Enable read mode
+    ldy #$00
+    ldx #hex2_l
+
+api_read_byte
+    lda serial_ready
+    beq api_read_byte   ;No data arrived
+    lda serial_read     ;Read byte
+    sta (hex2_l),Y      ;Store byte under address, this should be hex2_l but macro substitution doesn't work
+
+    lda hex2_l
+    cmp hex1_l          ;Compare lower destination address half with lower end address half
+    bne api_read_next   ;If not equal then increment destination address
+
+    lda hex2_h
+    cmp hex1_h          ;Compare upper destination address half with upper end address half
+    bne api_read_next   ;If not equal then proceed to read next byte
+
+    rts                 ;Read is completed, return
+
+api_read_next
+    jsr increment_16bit ;Increment destination address
+    jmp api_read_byte
+
+;-------------------------------------------------------------------------
+; API write procedure
+;-------------------------------------------------------------------------
+
+api_write
+    jsr reset_serial    ;Reset serial and give some time to stabilize
+                        ;This is required due to inability to guess what is the current device mode
+                        ;and prevents from polluting the output while setting the write mode
+    sta serial_write    ;Enable write mode
+api_write_ready
+    ldx #hex2_l
+    ldy #$00
+
+api_write_byte
+    lda serial_ready
+    beq api_write_byte  ;Not yet ready to write data
+    lda (hex2_l),Y      ;Read byte from source address, this should be hex2_l but macro substitution doesn't work
+    sta serial_write    ;Write byte
+
+    lda hex2_l
+    cmp hex1_l          ;Compare lower source address half with lower end address half
+    bne api_write_next  ;If not equal then increment source address
+
+    lda hex2_h
+    cmp hex1_h          ;Compare upper source address half with upper end address half
+    bne api_write_next  ;If not equal then proceed to write next byte
+
+    rts                 ;Write is completed, return
+
+api_write_next
+    jsr increment_16bit ;Increment destination address
+    jmp api_write_byte
+
 
 ;-------------------------------------------------------------------------
 ; tool routines
