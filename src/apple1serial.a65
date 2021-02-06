@@ -331,5 +331,6 @@ increment_16bit_done
 ;-------------------------------------------------------------------------
 
 end_of_apple1serial
-#include "src/tests.xa"
-#include "src/serialmonitor.xa"
+
+#include "src/tests.a65"
+#include "src/serialmonitor.a65"
