@@ -61,3 +61,9 @@ To build the firmware just type:
 And to clean the build:
 
 `make clean`
+
+# PCB
+
+The KiCad project files with board design and schematics can be found here:
+
+http://github.com/flowenol/Apple1SerialPcb
