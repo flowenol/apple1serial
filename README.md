@@ -14,7 +14,7 @@ need some other standard. The best way to connect the device to a regular modern
 
 | address | function |
 | --- | --- |
-| `$C100-$CFFF` | address space reserved for on-board ROM |
+| `$C100-$C7FF` | address space reserved for on-board ROM |
 | `$C100` | the original ACI loader program adapted to the A1SI |
 | `$C300` | "teletype on apple-1" test program - the data from remote terminal appears on Apple-1 screen |
 | `$C400` | "teletype on remote" test program - the data from Apple-1 appears on remote terminal |
@@ -30,7 +30,7 @@ entries for programmers:
 | `$C081` | write address - the location for data to be written via the interface, first write to this address switches the device to write mode |
 | `$C23A` | software reset routine - resets the MCU |
 | `$C1EC` | block read routine - reads data from the interface to the specified address range |
-| `$C213` | block write routine - writes the data via the interface from the specified address range  |
+| `$C213` | block write routine - writes the data from the specified address range via the interface |
 | `$0034` | lower byte of the end address for block read/write routines |
 | `$0035` | upper byte of the end address for block read/write routines |
 | `$0036` | lower byte of the beginning address for block read/write routines |
