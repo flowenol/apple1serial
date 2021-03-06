@@ -7,13 +7,13 @@ This repository contains firmware files for the Apple-1 Serial Interface expansi
 ## Description
 
 This project aims to provide an alternative to the ACI for the Apple-1 computer via use of the serial communication (9600/8-N-1).
-The expansion card is based around ATMega328P MCU which operates as half-duplex UART. The signal levels are TTL, so adapter boards may be required if you
-need some other standard. The best way to connect the device to a regular modern PC is to use one of those cheap FTDI FT232RL USB dongles available everywhere.
+The expansion card is based around ATMega328P MCU which operates as half-duplex UART. The signal levels are TTL, so adapter boards may be required if you need some other standard. The best way to connect the device to a regular modern PC is to use one of those cheap FTDI FT232RL USB dongles available everywhere.
 
 ## Memory map
 
 | address | function |
 | --- | --- |
+| `$C0FC-$C0FF` | these addresses contain the 'A1SI' string which might be used to determine whether the A1SI expansion card is present |
 | `$C100-$C7FF` | address space reserved for on-board ROM |
 | `$C100` | the original ACI loader program adapted to the A1SI |
 | `$C300` | "teletype on apple-1" test program - the data from remote terminal appears on Apple-1 screen |
@@ -25,7 +25,7 @@ entries for programmers:
 
 | address | function |
 | --- | --- |
-| `$C000` | ready flag - contains 0x01 if the device is ready to write/read byte, 0x00 otherwise |
+| `$C000` | ready flag - contains 0x01 if the device is ready to write/read, 0x00 otherwise |
 | `$C080` | read address - the location for data read from the interface, first read of this address switches the device to read mode |
 | `$C081` | write address - the location for data to be written via the interface, first write to this address switches the device to write mode |
 | `$C23A` | software reset routine - resets the MCU |
@@ -52,8 +52,9 @@ You need the following to successfully build the firmware:
 * [xa](https://www.floodgap.com/retrotech/xa/) cross assembler
 * [avr-gcc](https://gcc.gnu.org/wiki/avr-gcc) toolchain
 * [avr-libc](https://www.nongnu.org/avr-libc/) set of libraries
-* [AVRDUDE](https://www.nongnu.org/avrdude/) AVR programmer software or equivalent
+* [AVRDUDE](https://www.nongnu.org/avrdude/) AVR programmer software or equivalent to program the ATMega328P MCU
 * Some software capable of translating the EQN files into JED's. I used for this purpose the DOS based EQN2JED from OPALjr PLD Development Package. This is only required if you wish to make some changes to the GAL based address decoder. The default JED file should be fine for most users.
+* EEPROM programmer. I used [TL866](http://autoelectric.cn/EN/TL866_main.html) programmer for this purpose. It can also program the ATMega328P MCU.
 
 ## How to build?
 
