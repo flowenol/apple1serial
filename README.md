@@ -41,6 +41,7 @@ entries for programmers:
 
 The contents of this repository are as following:
 
+* gerber/ - gerber files needed to manufacture the PCB
 * firmware/ - contains source code for the ATMega328 MCU firmware
 * mapping/ - contains EQN and JED files for GAL20V8 based address decoder for the board
 * src/ - contains the 6502 assembly sources for the A1SI onboard ROM routines
