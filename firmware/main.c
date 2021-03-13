@@ -38,13 +38,6 @@ volatile uint8_t data_read_interrupt_count = 0;
 volatile uint8_t receive_buffer[BUFFER_SIZE];
 volatile int8_t receive_index = -1;
 
-// Registers: PCMSK0, PCMSK1, PCMSK2 :registers that enable or disable pin-change interrupts
-// on individual pins
-
-// PCICR : a register where the three least significant bits enable or disable pin change interrupts
-// on a range of pins, i.e. {0,0,0,0,0,PCIE2,PCIE1,PCIE0}, where PCIE2 maps to PCMSK2, PCIE1 maps to PCMSK1,
-// and PCIE0 maps to PCMSK0.
-
 inline void ready() {
     PORTD |= _BV(STATUS);
 }
@@ -61,6 +54,12 @@ inline void put_data() {
     PORTB = lower_part;
 }
 
+// Registers: PCMSK0, PCMSK1, PCMSK2 :registers that enable or disable
+// pin-change interrupts on individual pins.
+// PCICR : a register where the three least significant bits enable or disable
+// pin change interrupts on a range of pins, i.e.
+// {0,0,0,0,0,PCIE2,PCIE1,PCIE0}, where PCIE2 maps to PCMSK2, PCIE1 maps to
+// PCMSK1 and PCIE0 maps to PCMSK0.
 void setup() {
 
     // set input on DATA_READ_LINE

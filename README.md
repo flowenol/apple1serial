@@ -2,7 +2,7 @@
 
 # apple1serial
 
-This repository contains firmware files for the Apple-1 Serial Interface expansion card.
+This repository contains firmware and gerber files for the Apple-1 Serial Interface expansion card.
 
 ## Description
 
@@ -35,7 +35,6 @@ entries for programmers:
 | `$0035` | upper byte of the end address for block read/write routines |
 | `$0036` | lower byte of the beginning address for block read/write routines |
 | `$0037` | upper byte of the beginning address for block read/write routines |
-
 
 ## Contents
 
@@ -76,7 +75,7 @@ http://github.com/flowenol/Apple1SerialPcb
 ## Applesoft BASIC support
 
 You can also `LOAD` and `SAVE` your Applesoft BASIC programs thanks to the branch of the
-applesoft-lite project which has been modified to make use of the A1SI expansion card:
+applesoft-lite project which has been modified to be compatible with the A1SI expansion card:
 
 http://github.com/flowenol/applesoft-lite
 
@@ -84,6 +83,6 @@ http://github.com/flowenol/applesoft-lite
 
 Solder the "C" memory segment line near 74154 demultiplexer to the "T" signal line.
 Afterwards just put the board in right orientation (as marked on the PCB) in the Apple-1 expansion slot.
-Or you can use the port expander if the on board slot is already occupied:
+Or you can use the port expander if the on-board slot is already occupied:
 
 https://github.com/flowenol/Apple1ExpanderPcb
