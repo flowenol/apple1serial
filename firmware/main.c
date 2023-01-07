@@ -38,15 +38,15 @@ volatile uint8_t data_read_interrupt_count = 0;
 volatile uint8_t receive_buffer[BUFFER_SIZE];
 volatile int8_t receive_index = -1;
 
-inline void ready() {
+void ready() {
     PORTD |= _BV(STATUS);
 }
 
-inline void not_ready() {
+void not_ready() {
     PORTD &= ~(_BV(STATUS));
 }
 
-inline void put_data() {
+void put_data() {
     upper_part = (PORTD & 0xe3) | ((0xe0 & receive_buffer[0])>>3);
     lower_part = (PORTB & 0xc1) | ((0x1f & receive_buffer[0])<<1);
 
