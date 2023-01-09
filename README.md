@@ -110,6 +110,7 @@ http://github.com/flowenol/Apple1SerialPcb
 | R3..R9  | 1K 0.5W       | 7 |
 | XTAL1   | 16Mhz crystal HC49 low profile | 1 |
 | ATmega328P1 | ATMega328P microcontroller DIP28 | 1 |
+| 7402 | 7402 quad 2 input NOR gates DIP14 | 1 | 
 | 74S257mux1,2 | 74S257 quad multiplexers DIP16 | 2 |
 | 8T97buf1,2   | 8T97N hex tristate buffers DIP16 | 2 |
 | 20V8B1  | GAL20V8 SPLD (35ns or less) DIP24 | 1 |
