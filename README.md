@@ -12,8 +12,9 @@ as half-duplex UART. The signal levels are TTL, so adapter boards may be require
 to connect the device to a regular modern PC is to use FTDI FT232RL USB dongle.
 
 The board tries to mimic the original ACI behaviour via the modified ACI loader program `$C100` located on the on-board ROM.
-The usual way to communicate with the device is to hook it up to a PC and use a terminal emulator program to send and receive binary
-files representing the Apple-1 memory contents.
+The usual way to communicate with the device is to hook it up to a PC and use a terminal emulator program to send and
+receive binary files representing the Apple-1 memory contents. An alternative is to use custom software/scripts like the
+`scripts/transfer.py` python script.
 
 In order to learn how to use the loader program, please refer to the original ACI documentation or the instructions provided [here](https://www.sbprojects.net/projects/apple1/aci.php).
 
@@ -54,6 +55,7 @@ The contents of this repository are as following:
 * firmware/ - contains source code for the ATMega328 MCU firmware
 * mapping/ - contains EQN and JED files for GAL20V8 based address decoder for the board
 * src/ - contains the 6502 assembly sources for the A1SI onboard ROM routines
+* scripts/ - contains python based file transfer utility
 
 ## Requirements
 
@@ -93,7 +95,7 @@ https://github.com/flowenol/Apple1ExpanderPcb
 
 ## PCB
 
-Gerber files can be found in the `gerber/` directory.\
+Gerber files can be found in the `gerber/` directory.
 The KiCad project files with board design and schematics can be found here:
 
 http://github.com/flowenol/Apple1SerialPcb
@@ -110,7 +112,7 @@ http://github.com/flowenol/Apple1SerialPcb
 | R3..R9  | 1K 0.5W       | 7 |
 | XTAL1   | 16Mhz crystal HC49 low profile | 1 |
 | ATmega328P1 | ATMega328P microcontroller DIP28 | 1 |
-| 7402 | 7402 quad 2 input NOR gates DIP14 | 1 | 
+| 7402 | 7402 quad 2 input NOR gates DIP14 | 1 |
 | 74S257mux1,2 | 74S257 quad multiplexers DIP16 | 2 |
 | 8T97buf1,2   | 8T97N hex tristate buffers DIP16 | 2 |
 | 20V8B1  | GAL20V8 SPLD (35ns or less) DIP24 | 1 |
