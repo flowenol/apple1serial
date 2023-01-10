@@ -2,11 +2,11 @@
 GAL20V8
 EQN2JED - Boolean Equations to JEDEC file assembler (Version V101)
 Copyright (c) National Semiconductor Corporation 1990-1993
-Assembled from "c:\ADDRES~1.EQN". Date: 3-4-121
+Assembled from "d:\MAPPING\ADDRES~1.EQN". Date: 1-10-123
 *
 NOTE PINS RW:2 A8:3 A7:4 A6:5 A5:6 A4:7 A3:8 A2:9 A1:10 A0:11*
 NOTE PINS GND:12 A11:14 A10:15 A9:16 SR:17 RD:18 WD:19 ROM:20*
-NOTE PINS RES:21 PHI:22 R:23 VCC:24*
+NOTE PINS RES:21 PHI:22 T:23 VCC:24*
 NOTE GALMODE SMALL*
 QF2706*QP24*F0*
 L0320

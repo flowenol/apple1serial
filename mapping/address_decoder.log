@@ -1,7 +1,7 @@
 EQN2JED - Boolean Equations to JEDEC file assembler (Version V101)
 Copyright (c) National Semiconductor Corporation 1990-1993
 
-Log file for c:\ADDRES~1.EQN
+Log file for d:\MAPPING\ADDRES~1.EQN
 Device: 20V8
 
 Pin   Label               Type
@@ -26,7 +26,7 @@ Pin   Label               Type
 20    ROM                 neg,com output
 21    RES                 pos,com output
 22    PHI                 pos,com input
-23    R                   pos,com input
+23    T                   pos,com input
 24    VCC                 power pin
 
 EQN2JED - Boolean Equations to JEDEC file assembler (Version V101)
@@ -59,7 +59,7 @@ Copyright (c) National Semiconductor Corporation 1990-1993
                              ._____    _____.
                              |     \__/     |
                              |  1        24 | VCC
-                          RW |  2        23 | R
+                          RW |  2        23 | T
                           A8 |  3        22 | PHI
                           A7 |  4        21 | RES
                           A6 |  5        20 | ROM
