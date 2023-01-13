@@ -1,22 +1,22 @@
 #define echo    $FFEF
 #define kbd_data $D010
 #define kbd_cr $D011
-#define serial_ready $C000
-#define serial_read  $C080
-#define serial_write $C081
+#define serial_ready BASE + $000 + OFFSET
+#define serial_read  BASE + $080 + OFFSET
+#define serial_write BASE + $081 + OFFSET
 
 ; How to store INTEGER BASIC progams?
-; C100R - run serial monitor
+; C100( + OFFSET)R - run serial monitor
 ; 004A.00FFW 0800.0FFFW - write data for default LOMEM & HIMEM
 ; E2B3R - warm entry point
 
-* = $C300
+* = BASE + $300 + OFFSET
 .dsb (*-end_of_apple1serial), 0
 
 ; teletype on apple-1
 ; the data from remote appears on apple-1 screen
-* = $C300
-teletype_apple1 = $C300
+* = BASE + $300 + OFFSET
+teletype_apple1 = BASE + $300 + OFFSET
   jsr reset_serial
   lda serial_read
 teletype_apple1_wait
@@ -29,11 +29,11 @@ end_of_teletype_apple1
 
 ; teletype on remote
 ; the data from apple-1 appears on remote
-* = $C400
+* = BASE + $400 + OFFSET
 .dsb (*-end_of_teletype_apple1), 0
 
-* = $C400
-teletype_remote = $C400
+* = BASE + $400 + OFFSET
+teletype_remote = BASE + $400 + OFFSET
   jsr reset_serial
   lda #$FF
   sta serial_write
@@ -52,11 +52,11 @@ teletype_remote_wait
 end_of_teletype_remote
 
 ; 0-255 repeating counter over TXD
-* = $C500
+* = BASE + $500 + OFFSET
 .dsb (*-end_of_teletype_remote), 0
 
-* = $C500
-counter_remote = $C500
+* = BASE + $500 + OFFSET
+counter_remote = BASE + $500 + OFFSET
   jsr reset_serial
   ldy #$00
   sta serial_write

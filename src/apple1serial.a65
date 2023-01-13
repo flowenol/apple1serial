@@ -1,3 +1,11 @@
+#ifndef BASE
+#define BASE $C000
+#endif
+
+#ifndef OFFSET
+#define OFFSET 0
+#endif
+
 ;End address of dump block
 #define hex1_l $34
 #define hex1_h $35
@@ -19,10 +27,10 @@
 #define echo $FFEF           ;Echo character to terminal
 #define prbyte $FFDC
 
-#define serial_ready $C000
-#define serial_reset $C001
-#define serial_read  $C080
-#define serial_write $C081
+#define serial_ready BASE + OFFSET
+#define serial_reset BASE + $1 + OFFSET
+#define serial_read  BASE + $80 + OFFSET
+#define serial_write BASE + $81 + OFFSET
 
 
 #define R_LETTER $D2
@@ -34,14 +42,14 @@
 #define SPACE $A0
 
 ; pad first 252 bytes with zeroes
-.dsb 252, 0
+.dsb 252 + OFFSET, 0
 
 ; include identification bytes
 .byt "A1SI"
 
 ; this section is almost identical to original WOZ ACI
 ; adapted from https://www.sbprojects.net/projects/apple1/aci.php
-* = $C100
+* = BASE + $100 + OFFSET
 apple_serial
     lda #CR             ;Drop the cursor one line
     jsr echo
