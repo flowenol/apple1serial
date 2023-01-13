@@ -4,9 +4,9 @@
 ;  regarding the IO of the serial interface.
 ;-------------------------------------------------------------------------
 
-#define serial_ready $C000
-#define serial_read  $C080
-#define serial_write $C081
+#define serial_ready BASE + $000 + OFFSET
+#define serial_read  BASE + $080 + OFFSET
+#define serial_write BASE + $081 + OFFSET
 
 ;-------------------------------------------------------------------------
 ;  Memory declaration
@@ -64,9 +64,9 @@
 ;  Let's get started
 ;-------------------------------------------------------------------------
 
-* = $C600
+* = BASE + $600 + OFFSET
 .dsb (*-end_of_counter_remote), 0
-* = $C600
+* = BASE + $600 + OFFSET
 
 reset
     jsr reset_serial

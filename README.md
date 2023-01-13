@@ -57,6 +57,16 @@ The contents of this repository are as following:
 * src/ - contains the 6502 assembly sources for the A1SI onboard ROM routines
 * scripts/ - contains python based file transfer utility
 
+## Mappings
+
+There are two .jed files for the GAL20V8 based address decoder:
+
+1. **address_decoder-C000.jed** - defines the standard mapping where the device mimics the original ACI loader program at `$C100`.
+2. **address_decoder-C300.jed** - defines an alternative mapping allowing tu run Apple-1 Serial Interface together with the original ACI within the same system.
+All program and hardware entries are shifted by offset `$300`, so the loader program can be accessed at `$C400`.
+
+
+
 ## Requirements
 
 You need the following to successfully build the firmware:
