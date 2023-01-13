@@ -108,8 +108,8 @@ http://github.com/flowenol/Apple1SerialPcb
 | C1, C2  | Ceramic 22pF  | 2 |
 | C3..C9  | Ceramic 100nF | 7 |
 | C10     | Electrolytic 22uF | 1 |
-| R1, R2  | 0.68K 0.5W    | 2 |
-| R3..R9  | 1K 0.5W       | 7 |
+| R1, R2  | 0.68K 0.25W    | 2 |
+| R3..R9  | 1K 0.25W       | 7 |
 | XTAL1   | 16Mhz crystal HC49 low profile | 1 |
 | ATmega328P1 | ATMega328P microcontroller DIP28 | 1 |
 | 7402 | 7402 quad 2 input NOR gates DIP14 | 1 |
