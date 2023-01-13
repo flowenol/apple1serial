@@ -19,3 +19,15 @@ all: apple1serial-C000.bin apple1serial-C300.bin
 
 clean:
 	rm -f apple1serial*.bin apple1serial*.label
+
+burn-C000-gal:
+	minipro -p GAL20V8B -w mapping/address_decoder-C000.jed
+
+burn-C000-rom: apple1serial-C000.bin
+	minipro -s -p 28C64B -w apple1serial-C000.bin
+
+burn-C300-gal:
+	minipro -p GAL20V8B -w mapping/address_decoder-C300.jed
+
+burn-C300-rom: apple1serial-C300.bin
+	minipro -s -p 28C64B -w apple1serial-C300.bin
