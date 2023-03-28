@@ -62,21 +62,37 @@ The contents of this repository are as following:
 There are two .jed files for the GAL20V8 based address decoder:
 
 1. **address_decoder-C000.jed** - defines the standard mapping where the device mimics the original ACI loader program at `$C100`.
-2. **address_decoder-C300.jed** - defines an alternative mapping allowing tu run Apple-1 Serial Interface together with the original ACI within the same system.
+2. **address_decoder-C300.jed** - defines an alternative mapping to run Apple-1 Serial Interface together with the original ACI within the same system.
 All program and hardware entries are shifted by offset `$300`, so the loader program can be accessed at `$C400`.
+2. **address_decoder-C600.jed** - defines an alternative mapping to run Apple-1 Serial Interface together with both the original and Improved ACI 2.0 (by Uncle Bernie) within the same system.
+All program and hardware entries are shifted by offset `$600`, so the loader program can be accessed at `$C700`.
 
+Please be sure to program the ROM with the bin image corresponding to the selected mapping.
+
+You can use the convenient `make` targets to burn ROM and GAL, if you have the `minipro` utility installed:
+```bash
+make burn-C000-gal
+make burn-C000-rom
+
+make burn-C300-gal
+make burn-C300-rom
+
+make burn-C600-gal
+make burn-C600-rom
+```
 
 
 ## Requirements
 
 You need the following to successfully build the firmware:
 
-* [xa](https://www.floodgap.com/retrotech/xa/) cross assembler
-* [avr-gcc](https://gcc.gnu.org/wiki/avr-gcc) toolchain
-* [avr-libc](https://www.nongnu.org/avr-libc/) set of libraries
-* [AVRDUDE](https://www.nongnu.org/avrdude/) AVR programmer software or equivalent to program the ATMega328P MCU
+* [xa](https://www.floodgap.com/retrotech/xa/) cross assembler.
+* [avr-gcc](https://gcc.gnu.org/wiki/avr-gcc) toolchain.
+* [avr-libc](https://www.nongnu.org/avr-libc/) set of libraries.
+* [AVRDUDE](https://www.nongnu.org/avrdude/) AVR programmer software or equivalent to program the ATMega328P MCU.
 * Software capable of translating the .eqn files into .jed's. I used for this purpose the DOS based EQN2JED from OPALjr PLD Development Package. This is only required if you wish to make some changes to the GAL based address decoder. The default .jed file should be fine for most users.
 * EEPROM programmer to write ROM and GAL. I used [TL866](http://autoelectric.cn/EN/TL866_main.html) programmer for this purpose. It can also program the ATMega328P MCU.
+* You can use the [minipro](https://gitlab.com/DavidGriffith/minipro/) utility to write ROM, GAL and MCU.
 
 ## How to build?
 
