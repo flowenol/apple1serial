@@ -24,28 +24,28 @@ Some Apple-1 program binaries ready to be downloaded are available [here](https:
 
 | address | function |
 | --- | --- |
-| `$C0FC-$C0FF` | these addresses contain the 'A1SI' string which might be used to determine whether the A1SI expansion card is present |
-| `$C100-$C7FF` | address space reserved for on-board ROM |
-| `$C100` | the original ACI loader program adapted to the A1SI |
-| `$C300` | "teletype on apple-1" test program - the data from remote terminal appears on Apple-1 screen |
-| `$C400` | "teletype on remote" test program - the data from Apple-1 appears on remote terminal |
-| `$C500` | 0-255 repeating counter - all possible bytes are repeatedly sent to remote terminal |
-| `$C600` | serialmonitor - the well known Woz Monitor variation, but now on the remote terminal |
+| `$C0FC-$C0FF` | these addresses contain the 'A1SI' string which might be used to determine whether the A1SI expansion card is present. |
+| `$C100-$C7FF` | address space reserved for on-board ROM. |
+| `$C100` | the original ACI loader program adapted to the A1SI. |
+| `$C300` | "teletype on apple-1" test program - the data from remote terminal appears on Apple-1 screen. |
+| `$C400` | "teletype on remote" test program - the data from Apple-1 appears on remote terminal. |
+| `$C500` | 0-255 repeating counter - all possible bytes are repeatedly sent to remote terminal. |
+| `$C600` | serialmonitor - the well known Woz Monitor variation, but now on the remote terminal. |
 
 entries for programmers:
 
 | address | function |
 | --- | --- |
-| `$C000` | ready flag - contains 0x01 if the device is ready to write/read, 0x00 otherwise |
-| `$C080` | read address - the location for data read from the interface, first read of this address switches the device to read mode |
-| `$C081` | write address - the location for data to be written via the interface, first write to this address switches the device to write mode |
-| `$C23A` | software reset routine - resets the MCU |
-| `$C1EC` | block read routine - reads data from the interface and writes to the specified address range |
-| `$C213` | block write routine - reads the data from the specified address range and write via the interface |
-| `$0034` | lower byte of the end address for block read/write routines |
-| `$0035` | upper byte of the end address for block read/write routines |
-| `$0036` | lower byte of the beginning address for block read/write routines |
-| `$0037` | upper byte of the beginning address for block read/write routines |
+| `$C000` | ready flag - contains 0x01 if the device is ready to write/read, 0x00 otherwise. |
+| `$C080` | read address - the location for data read from the interface, first read of this address switches the device to read mode. |
+| `$C081` | write address - the location for data to be written via the interface. First write operation to this address switches the device to write mode. If you want to immediately write bytes after switching to write mode you must wait for the ready flag at `$C000` to be set. |
+| `$C23A` | software reset routine - resets the MCU. |
+| `$C1EC` | block read routine - reads data from the interface and writes to the specified address range. |
+| `$C213` | block write routine - reads the data from the specified address range and write via the interface. |
+| `$0034` | lower byte of the end address for block read/write routines. |
+| `$0035` | upper byte of the end address for block read/write routines. |
+| `$0036` | lower byte of the beginning address for block read/write routines. |
+| `$0037` | upper byte of the beginning address for block read/write routines. |
 
 ## Contents
 
@@ -110,6 +110,10 @@ You can also `LOAD` and `SAVE` your Applesoft BASIC programs thanks to the branc
 applesoft-lite project which has been modified to be compatible with the A1SI expansion card:
 
 http://github.com/flowenol/applesoft-lite
+
+## ACItest
+
+You can use the A1SI expansion card to [test the reliability](http://github.com/flowenol/ACItest) of the Apple-1 Cassette Interface.
 
 ## How to install hardware?
 
