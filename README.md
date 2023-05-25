@@ -8,8 +8,7 @@ This repository contains firmware and gerber files for the Apple-1 Serial Interf
 
 This project aims to provide an alternative to the Apple Cassette Interface for the Apple-1 computer with use of the serial
 communication (9600/8-N-1). The expansion card is based around inexpensive and easily available ATMega328P MCU which operates
-as half-duplex UART. The signal levels are TTL, so adapter boards may be required if you need some other standard. The best way
-to connect the device to a regular modern PC is to use FTDI FT232RL USB dongle.
+as half-duplex UART. The best way to connect the device to a regular modern PC is to use FTDI FT232RL USB dongle via exposed pin headers (5V TTL) or traditionally via standard DB9 RS232 connector.
 
 The board tries to mimic the original ACI behaviour via the modified ACI loader program `$C100` located on the on-board ROM.
 The usual way to communicate with the device is to hook it up to a PC and use a terminal emulator program to send and
@@ -126,6 +125,7 @@ https://github.com/flowenol/Apple1ExpanderPcb
 ## PCB
 
 Gerber files can be found in the `gerber/` directory.
+The previous version of the board without DB9 connector can be found in the `gerber/noDB9` directory.
 The KiCad project files with board design and schematics can be found here:
 
 http://github.com/flowenol/Apple1SerialPcb
@@ -138,6 +138,7 @@ http://github.com/flowenol/Apple1SerialPcb
 | C1, C2  | Ceramic 22pF  | 2 |
 | C3..C9  | Ceramic 100nF | 7 |
 | C10     | Electrolytic 22uF | 1 |
+| C11..C14| Electrolytic 10uF | 4 |
 | R1, R2  | 0.68K 0.25W    | 2 |
 | R3..R9  | 1K 0.25W       | 7 |
 | XTAL1   | 16Mhz crystal HC49 low profile | 1 |
@@ -147,8 +148,10 @@ http://github.com/flowenol/Apple1SerialPcb
 | 8T97buf1,2   | 8T97N hex tristate buffers DIP16 | 2 |
 | 20V8B1  | GAL20V8 SPLD (35ns or less) DIP24 | 1 |
 | AT28C64B1 | AT28C64 ROM or similar DIP-28 | 1 |
+| MAX232 | Maxim MAX232 RS-232 driver/receiver DIP16 | 1 |
 | LED1 | LM358N double op amp DIP8 | 1 |
 | TX_LED1, RX_LED1 | LED phi 3mm | 2 |
 | L7805 | LM7805 regulator (optional) | 1 |
-| SERIAL1 | 1x3 2.54mm pin header | 1 |
+| SERIAL1 | 1x4 2.54mm pin header | 1 |
+| RS232 | DB9 horizontal female header (mounting holes offset 7.48mm) | 1 |  
 | ROM_PWR1| 1x3 2.54mm pin header (optional -  make solder blob to "5V" instead) | 1 |
